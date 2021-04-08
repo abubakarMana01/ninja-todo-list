@@ -3,6 +3,9 @@ const searchForm = document.querySelector('.search-form');
 const todos = document.querySelector('.todos');
 const search = document.querySelector('#search-field');
 
+let localTodos = localStorage.getItem('todos');
+localTodos = JSON.parse(localTodos);
+
 function generateHTMLTemplate(input) {
 	let html = `
     <li>
@@ -13,6 +16,21 @@ function generateHTMLTemplate(input) {
 	todos.innerHTML += html;
 }
 
+// Add from local storage
+if (localStorage.todos != null) {
+	localTodos.forEach(todo => {
+		todos.innerHTML += `
+        <li>
+            <p>${todo}</p>
+            <i class="far fa-trash-alt delete"></i>
+        </li>
+    `;
+	});
+} else {
+	localTodos = [];
+}
+
+// add todos
 addTodoForm.addEventListener('submit', e => {
 	e.preventDefault();
 	let input = addTodoForm.add.value.trim();
@@ -20,11 +38,27 @@ addTodoForm.addEventListener('submit', e => {
 		generateHTMLTemplate(input);
 		addTodoForm.reset();
 	}
+
+	localTodos.push(input);
+	localStorage.setItem('todos', JSON.stringify(localTodos));
 });
 
 // delete todos
 todos.addEventListener('click', e => {
 	if (e.target.classList.contains('delete')) {
+		const itemToRemove = e.target.parentElement.children[0].textContent;
+		let i;
+		if (localTodos.includes(itemToRemove)) {
+			localTodos = localTodos.filter((item, index) => {
+				i = index;
+				return item !== itemToRemove;
+			});
+
+			let temp = JSON.parse(localStorage.todos);
+			temp = localTodos;
+
+			localStorage.todos = JSON.stringify(temp);
+		}
 		e.target.parentElement.remove();
 	}
 });
